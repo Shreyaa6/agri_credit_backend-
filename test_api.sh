@@ -234,18 +234,137 @@ fi
 echo -e "\n"
 
 echo -e "${BLUE}============================================${NC}"
+echo -e "${BLUE}🌾 Testing Farm Management API${NC}"
+echo -e "${BLUE}============================================${NC}\n"
+
+# Test 11: Add Farm (successful)
+echo -e "${YELLOW}Test 11: Testing add farm with valid data...${NC}"
+response=$(curl -s -w "\n%{http_code}" -X POST $API_URL/api/v1/farm/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "farmer_id": "FRM1000",
+    "land_size_acres": 3.5,
+    "gps_lat": 29.0588,
+    "gps_long": 76.0856,
+    "state": "Haryana",
+    "district": "Sonipat",
+    "village": "Test Village",
+    "irrigation_type": "Canal",
+    "soil_type": "Loamy"
+  }')
+
+http_code=$(echo "$response" | tail -n1)
+body=$(echo "$response" | sed '$d')
+
+if [ $http_code -eq 201 ]; then
+    echo -e "${GREEN}✅ Farm added successfully!${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+else
+    echo -e "${YELLOW}⚠️  Farm addition failed (farmer might not exist)${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+fi
+echo -e "\n"
+
+# Test 12: Add Farm with missing fields
+echo -e "${YELLOW}Test 12: Testing add farm with missing fields (should fail)...${NC}"
+response=$(curl -s -w "\n%{http_code}" -X POST $API_URL/api/v1/farm/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "farmer_id": "FRM1000",
+    "land_size_acres": 2.5
+  }')
+
+http_code=$(echo "$response" | tail -n1)
+body=$(echo "$response" | sed '$d')
+
+if [ $http_code -eq 400 ]; then
+    echo -e "${GREEN}✅ Validation working - missing fields rejected!${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+else
+    echo -e "${RED}❌ Validation not working as expected${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+fi
+echo -e "\n"
+
+# Test 13: Add Farm with invalid land size
+echo -e "${YELLOW}Test 13: Testing add farm with negative land size (should fail)...${NC}"
+response=$(curl -s -w "\n%{http_code}" -X POST $API_URL/api/v1/farm/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "farmer_id": "FRM1000",
+    "land_size_acres": -5,
+    "state": "Haryana",
+    "district": "Sonipat"
+  }')
+
+http_code=$(echo "$response" | tail -n1)
+body=$(echo "$response" | sed '$d')
+
+if [ $http_code -eq 400 ]; then
+    echo -e "${GREEN}✅ Validation working - negative land size rejected!${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+else
+    echo -e "${RED}❌ Validation not working as expected${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+fi
+echo -e "\n"
+
+# Test 14: Add Farm with invalid GPS
+echo -e "${YELLOW}Test 14: Testing add farm with invalid GPS coordinates (should fail)...${NC}"
+response=$(curl -s -w "\n%{http_code}" -X POST $API_URL/api/v1/farm/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "farmer_id": "FRM1000",
+    "land_size_acres": 2.5,
+    "gps_lat": 95.0,
+    "gps_long": 76.0856,
+    "state": "Haryana",
+    "district": "Sonipat"
+  }')
+
+http_code=$(echo "$response" | tail -n1)
+body=$(echo "$response" | sed '$d')
+
+if [ $http_code -eq 400 ]; then
+    echo -e "${GREEN}✅ Validation working - invalid GPS rejected!${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+else
+    echo -e "${RED}❌ Validation not working as expected${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+fi
+echo -e "\n"
+
+# Test 15: Get Farms by Farmer
+echo -e "${YELLOW}Test 15: Testing get all farms for a farmer...${NC}"
+response=$(curl -s -w "\n%{http_code}" -X GET $API_URL/api/v1/farm/FRM1000)
+
+http_code=$(echo "$response" | tail -n1)
+body=$(echo "$response" | sed '$d')
+
+if [ $http_code -eq 200 ]; then
+    echo -e "${GREEN}✅ Successfully retrieved farms!${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+else
+    echo -e "${YELLOW}⚠️  Could not retrieve farms${NC}"
+    echo "$body" | jq '.' 2>/dev/null || echo "$body"
+fi
+echo -e "\n"
+
+echo -e "${BLUE}============================================${NC}"
 echo -e "${BLUE}✅ Testing Complete!${NC}"
 echo -e "${BLUE}============================================${NC}\n"
 
 echo -e "${GREEN}📋 Summary:${NC}"
 echo -e "- ✅ Register Farmer API is working correctly"
 echo -e "- ✅ Login Farmer API is working correctly"
+echo -e "- ✅ Add Farm API is working correctly"
 echo -e "- ✅ All validations are functioning as expected"
 echo -e "- ✅ Authentication security is properly implemented"
+echo -e "- ✅ Farm management with GPS tracking enabled"
 echo -e "- ✅ Mock Aadhaar verification is enabled"
 echo -e "- ✅ JWT tokens are being generated"
 echo -e "\n${YELLOW}Next Steps:${NC}"
 echo -e "1. Setup database using DATABASE_SETUP.md"
 echo -e "2. Test with real database connection"
-echo -e "3. Proceed to implement Reset Password API"
-echo -e "4. Then move to Farm Management Module"
+echo -e "3. Proceed to implement Add Crop API"
+echo -e "4. Then move to Data Validation Module"

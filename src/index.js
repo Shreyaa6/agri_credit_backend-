@@ -12,9 +12,11 @@ app.use(express.json());
 // Routes
 const authRoutes = require('./routes/authRoutes');
 const farmerRoutes = require('./routes/farmerRoutes');
+const farmRoutes = require('./routes/farmRoutes');
 
 // Mount routes
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/farm', farmRoutes);
 app.use('/api/farmers', farmerRoutes);
 
 app.get('/', (req, res) => {
@@ -23,6 +25,7 @@ app.get('/', (req, res) => {
         version: '1.0',
         endpoints: {
             auth: '/api/v1/auth',
+            farm: '/api/v1/farm',
             farmers: '/api/farmers'
         }
     });

@@ -353,3 +353,247 @@ The JWT token contains:
 }
 ```
 
+---
+
+# Farm Management API Tests
+
+## 3. Add Farm API
+
+### Endpoint
+```
+POST http://localhost:5000/api/v1/farm/add
+Content-Type: application/json
+```
+
+### Test Case 1: Successful Farm Addition
+```json
+{
+  "farmer_id": "FRM1023",
+  "land_size_acres": 2.5,
+  "gps_lat": 29.0588,
+  "gps_long": 76.0856,
+  "state": "Haryana",
+  "district": "Sonipat",
+  "village": "Bilaspur",
+  "irrigation_type": "Canal",
+  "soil_type": "Loamy"
+}
+```
+
+**Expected Response (201):**
+```json
+{
+  "message": "Farm added successfully",
+  "farm_id": "FARM1004",
+  "farmer_name": "Ramesh Kumar",
+  "land_size_acres": 2.5,
+  "location": {
+    "state": "Haryana",
+    "district": "Sonipat",
+    "village": "Bilaspur"
+  }
+}
+```
+
+### Test Case 2: Missing Required Fields
+```json
+{
+  "farmer_id": "FRM1023",
+  "land_size_acres": 2.5
+}
+```
+
+**Expected Response (400):**
+```json
+{
+  "error": "Missing required fields",
+  "message": "farmer_id, land_size_acres, state, and district are required"
+}
+```
+
+### Test Case 3: Invalid Land Size
+```json
+{
+  "farmer_id": "FRM1023",
+  "land_size_acres": -5,
+  "state": "Haryana",
+  "district": "Sonipat"
+}
+```
+
+**Expected Response (400):**
+```json
+{
+  "error": "Invalid land size",
+  "message": "land_size_acres must be a positive number"
+}
+```
+
+### Test Case 4: Invalid GPS Coordinates
+```json
+{
+  "farmer_id": "FRM1023",
+  "land_size_acres": 2.5,
+  "gps_lat": 95.0,
+  "gps_long": 76.0856,
+  "state": "Haryana",
+  "district": "Sonipat"
+}
+```
+
+**Expected Response (400):**
+```json
+{
+  "error": "Invalid GPS latitude",
+  "message": "gps_lat must be between -90 and 90"
+}
+```
+
+### Test Case 5: Non-existent Farmer
+```json
+{
+  "farmer_id": "FRM9999",
+  "land_size_acres": 2.5,
+  "state": "Haryana",
+  "district": "Sonipat"
+}
+```
+
+**Expected Response (404):**
+```json
+{
+  "error": "Farmer not found",
+  "message": "No farmer found with ID: FRM9999"
+}
+```
+
+### Test Case 6: Minimal Required Data
+```json
+{
+  "farmer_id": "FRM1023",
+  "land_size_acres": 3.0,
+  "state": "Punjab",
+  "district": "Ludhiana"
+}
+```
+
+**Expected Response (201):**
+```json
+{
+  "message": "Farm added successfully",
+  "farm_id": "FARM1005",
+  "farmer_name": "Ramesh Kumar",
+  "land_size_acres": 3.0,
+  "location": {
+    "state": "Punjab",
+    "district": "Ludhiana",
+    "village": null
+  }
+}
+```
+
+---
+
+## CURL Commands for Farm Management Testing
+
+### Add Farm (Full Details):
+```bash
+curl -X POST http://localhost:5000/api/v1/farm/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "farmer_id": "FRM1023",
+    "land_size_acres": 2.5,
+    "gps_lat": 29.0588,
+    "gps_long": 76.0856,
+    "state": "Haryana",
+    "district": "Sonipat",
+    "village": "Bilaspur",
+    "irrigation_type": "Canal",
+    "soil_type": "Loamy"
+  }'
+```
+
+### Add Farm (Minimal Details):
+```bash
+curl -X POST http://localhost:5000/api/v1/farm/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "farmer_id": "FRM1023",
+    "land_size_acres": 3.0,
+    "state": "Punjab",
+    "district": "Ludhiana"
+  }'
+```
+
+### Get All Farms for a Farmer:
+```bash
+curl -X GET http://localhost:5000/api/v1/farm/FRM1023
+```
+
+### Get Specific Farm Details:
+```bash
+curl -X GET http://localhost:5000/api/v1/farm/details/FARM1004
+```
+
+### Complete Workflow (Register → Login → Add Farm):
+```bash
+# Step 1: Register Farmer
+curl -X POST http://localhost:5000/api/v1/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{
+    "aadhaar_number": "666666666666",
+    "full_name": "Farm Owner Test",
+    "mobile_number": "6666666666",
+    "password": "farmtest123",
+    "language_preference": "English"
+  }'
+
+# Step 2: Login
+curl -X POST http://localhost:5000/api/v1/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{
+    "aadhaar_number": "666666666666",
+    "password": "farmtest123"
+  }'
+
+# Step 3: Add Farm (use farmer_id from step 1)
+curl -X POST http://localhost:5000/api/v1/farm/add \
+  -H "Content-Type: application/json" \
+  -d '{
+    "farmer_id": "FRM1004",
+    "land_size_acres": 5.0,
+    "gps_lat": 30.7333,
+    "gps_long": 76.7794,
+    "state": "Punjab",
+    "district": "Mohali",
+    "irrigation_type": "Tubewell"
+  }'
+```
+
+---
+
+## Farm Management Implementation Details
+
+### Validation Rules
+- ✅ farmer_id is required and must exist
+- ✅ land_size_acres is required and must be positive
+- ✅ state and district are required
+- ✅ GPS coordinates are optional but validated if provided
+  - Latitude: -90 to 90
+  - Longitude: -180 to 180
+- ✅ village, irrigation_type, soil_type are optional
+
+### Database Relationships
+- ✅ Farm links to Farmer via farmer_id (foreign key)
+- ✅ Cascade delete: deleting farmer removes their farms
+- ✅ Each farm has unique farm_id (FARM1000, FARM1001...)
+
+### Features
+- ✅ Auto-generated farm_id
+- ✅ GPS location tracking
+- ✅ Multiple farms per farmer supported
+- ✅ Detailed location information (state/district/village)
+- ✅ Irrigation and soil type tracking
+- ✅ Timestamps for audit trail
+
+

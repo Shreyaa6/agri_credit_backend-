@@ -129,7 +129,9 @@ Before testing, ensure:
 ### 🌾 2.1 Add Farm
 - Endpoint: `POST /api/v1/farm/add`
 
-### 🌾 2.2 Add Crop
+**STATUS:** ✅ **COMPLETE!**
+
+### 🌾 2.2 Add Crop (NEXT)
 - Endpoint: `POST /api/v1/crop/add`
 
 And more...
@@ -141,5 +143,5 @@ And more...
 For testing instructions, see: `API_TESTS.md`  
 For problem statement reference, see: `prStatement.txt`
 
-**Current Implementation:** 2/15 APIs Complete (13.3%)
-**Status:** Login Farmer API ✅ DONE
+**Current Implementation:** 3/15 APIs Complete (20%)
+**Status:** Add Farm API ✅ DONE
