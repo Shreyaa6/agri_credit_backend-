@@ -1,8 +1,9 @@
 const redis = require('redis');
 require('dotenv').config();
+const config = require('./environment');
 
 const redisClient = redis.createClient({
-    url: process.env.REDIS_URL || 'redis://localhost:6379',
+    url: config.REDIS_URL || 'redis://localhost:6379',
     socket: {
         reconnectStrategy: (retries) => {
             if (retries > 5) {
@@ -25,8 +26,12 @@ redisClient.on('error', (err) => {
 
 (async () => {
     try {
-        await redisClient.connect();
-        console.log('✅ Connected to Redis (Optional Caching Enabled)');
+        if (config.ENABLE_REDIS) {
+            await redisClient.connect();
+            console.log('✅ Connected to Redis (Optional Caching Enabled)');
+        } else if (config.isDevelopment) {
+            console.log('ℹ️  Redis disabled (optional)');
+        }
     } catch (err) {
         // Silently continue - caching is optional
     }

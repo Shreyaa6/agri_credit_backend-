@@ -1,9 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
+const config = require('./config/environment');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.PORT;
 
 // Middleware
 app.use(cors());
@@ -31,6 +32,8 @@ app.get('/', (req, res) => {
     res.json({ 
         message: 'AgriCredit API with Supabase & Redis',
         version: '1.0',
+        environment: config.NODE_ENV,
+        baseUrl: config.API_BASE_URL,
         endpoints: {
             auth: '/api/v1/auth',
             farm: '/api/v1/farm',
@@ -47,8 +50,11 @@ app.get('/', (req, res) => {
 module.exports = app;
 
 // Only start the server if not running in Vercel
-if (process.env.NODE_ENV !== 'production') {
+if (!config.isProduction) {
     app.listen(PORT, () => {
-        console.log(`Backend Server running on port ${PORT}`);
+        console.log(`\n🚀 Backend Server running on port ${PORT}`);
+        console.log(`🌍 Environment: ${config.NODE_ENV}`);
+        console.log(`📍 Base URL: ${config.API_BASE_URL}`);
+        console.log(`✅ Server ready at http://localhost:${PORT}\n`);
     });
 }
