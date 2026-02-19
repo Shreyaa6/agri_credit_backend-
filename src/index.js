@@ -43,6 +43,12 @@ app.get('/', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Backend Server running on port ${PORT}`);
-});
+// Export the Express app for Vercel
+module.exports = app;
+
+// Only start the server if not running in Vercel
+if (process.env.NODE_ENV !== 'production') {
+    app.listen(PORT, () => {
+        console.log(`Backend Server running on port ${PORT}`);
+    });
+}

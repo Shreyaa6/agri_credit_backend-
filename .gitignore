@@ -1,5 +1,21 @@
 node_modules/
 .env
+.env.local
+.env*.local
 .DS_Store
 dist/
 *.log
+
+# Vercel
+.vercel
+.vercel/
+
+# Build
+build/
+coverage/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
